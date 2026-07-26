@@ -1,5 +1,6 @@
 certifi==2026.7.22
 charset-normalizer==3.4.9
+duckdb==1.4.5
 idna==3.18
 requests==2.32.5
 urllib3==2.6.3
