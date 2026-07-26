@@ -91,7 +91,7 @@ Complete Pokémon JSON
 
 ---
 
-## ⏳ Phase 3 – Store Raw Data in DuckDB
+## ✅ Phase 3 – Store Raw Data in DuckDB
 
 Objectives:
 
