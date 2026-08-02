@@ -1,2 +1,6 @@
 *.duckdb
 *.erd
+package-lock.yml
+target/
+logs/
+dbt_packages/

@@ -9,6 +9,7 @@ url = "https://pokeapi.co/api/v2/pokemon/"
 
 all_pokemon = []
 
+<<<<<<< Updated upstream
 while url:
     response = requests.get(url)
     response.raise_for_status()
@@ -39,6 +40,99 @@ poke_db.execute(
 
 loaded_at = datetime.now(timezone.utc)
 total = len(all_pokemon)
+=======
+    conn.execute(
+        """
+        DROP TABLE IF EXISTS raw_pokemon_moves;
+        """
+    )
+
+    conn.execute(
+        """
+        DROP TABLE IF EXISTS raw_pokemon_abilities;
+        """
+    )
+
+    conn.execute(
+        """
+        DROP TABLE IF EXISTS raw_pokemon_stats;
+        """
+    )
+
+    conn.execute(
+        """
+        DROP TABLE IF EXISTS raw_pokemon_types;
+        """
+    )
+
+    conn.execute(
+        """
+        CREATE TABLE raw_pokemon (
+            id INTEGER PRIMARY KEY,
+            name VARCHAR,
+            raw_json JSON,
+            loaded_at TIMESTAMPTZ,
+            source_url VARCHAR
+        );
+        """
+    )
+
+    conn.execute(
+        """
+        CREATE TABLE raw_pokemon_moves (
+            pokemon_id INTEGER,
+            move_id INTEGER,
+            move_json JSON,
+            loaded_at TIMESTAMPTZ,
+            PRIMARY KEY (pokemon_id, move_id)
+        );
+        """
+        )
+
+    conn.execute(
+        """
+        CREATE TABLE raw_pokemon_abilities (
+            pokemon_id INTEGER,
+            ability_id INTEGER,
+            ability_json JSON,
+            loaded_at TIMESTAMPTZ,
+            PRIMARY KEY (pokemon_id, ability_id)
+        );
+        """
+        )
+
+    conn.execute(
+        """
+        CREATE TABLE raw_pokemon_stats (
+            pokemon_id INTEGER,
+            stat_id INTEGER,
+            stat_json JSON,
+            loaded_at TIMESTAMPTZ,
+            PRIMARY KEY (pokemon_id, stat_id)
+        );
+        """
+        )
+
+    conn.execute(
+        """
+        CREATE TABLE raw_pokemon_types (
+            pokemon_id INTEGER,
+            type_id INTEGER,
+            type_json JSON,
+            loaded_at TIMESTAMPTZ,
+            PRIMARY KEY (pokemon_id, type_id)
+        );
+        """
+        )
+
+def load_raw_pokemon(conn, pokemon_index):
+    """
+    Retrieves detailed Pokemon records from PokeAPI
+    and loads raw JSON responses into DuckDB.
+    """
+    loaded_at = datetime.now(timezone.utc)
+    total = len(pokemon_index)
+>>>>>>> Stashed changes
 
 for index, pokemon in enumerate(all_pokemon, start=1):
     print(f"Loading {index}/{total}: {pokemon['name']}")
@@ -51,6 +145,7 @@ for index, pokemon in enumerate(all_pokemon, start=1):
     pokemon_name = pokemon_details['name']
     source_url = pokemon["url"]
     
+<<<<<<< Updated upstream
     poke_db.execute(
         """
         INSERT INTO raw_pokemon (
@@ -65,3 +160,100 @@ for index, pokemon in enumerate(all_pokemon, start=1):
     )
     
 poke_db.close()
+=======
+        pokemon_details = detail_response.json()
+        
+        pokemon_id = pokemon_details['id']
+        pokemon_name = pokemon_details['name']
+        pokemon_moves = pokemon_details['moves']
+        pokemon_abilities = pokemon_details['abilities']
+        pokemon_stats = pokemon_details['stats']
+        pokemon_types = pokemon_details['types']
+        source_url = pokemon["url"]
+        
+        conn.execute(
+            """
+            INSERT INTO raw_pokemon (
+                id,
+                name,
+                raw_json,
+                loaded_at,
+                source_url
+            )
+            VALUES (?, ?, ?, ?, ?)
+            """, (pokemon_id, pokemon_name, json.dumps(pokemon_details), loaded_at, source_url)
+        )
+
+        for move in pokemon_moves:
+            move_url = move["move"]["url"]
+
+            move_id = move_url.rstrip("/").split("/")[-1]
+            conn.execute(
+                """
+                INSERT INTO raw_pokemon_moves (
+                    pokemon_id,
+                    move_id,
+                    move_json,
+                    loaded_at
+                )
+                VALUES (?, ?, ?, ?)
+                """, (pokemon_id, move_id, json.dumps(move), loaded_at)
+            )
+
+        for ability in pokemon_abilities:
+            ability_url = ability["ability"]["url"]
+
+            ability_id = ability_url.rstrip("/").split("/")[-1]
+            conn.execute(
+                """
+                INSERT INTO raw_pokemon_abilities (
+                    pokemon_id,
+                    ability_id,
+                    ability_json,
+                    loaded_at
+                )
+                VALUES (?, ?, ?, ?)
+                """, (pokemon_id, ability_id, json.dumps(ability), loaded_at)
+            )
+
+        for typ in pokemon_types:
+            type_url = typ["type"]["url"]
+
+            type_id = type_url.rstrip("/").split("/")[-1]
+            conn.execute(
+                """
+                INSERT INTO raw_pokemon_types (
+                    pokemon_id,
+                    type_id,
+                    type_json,
+                    loaded_at
+                )
+                VALUES (?, ?, ?, ?)
+                """, (pokemon_id, type_id, json.dumps(typ), loaded_at)
+            )
+
+        for stat in pokemon_stats:
+            stat_url = stat["stat"]["url"]
+
+            stat_id = stat_url.rstrip("/").split("/")[-1]
+            conn.execute(
+                """
+                INSERT INTO raw_pokemon_stats (
+                    pokemon_id,
+                    stat_id,
+                    stat_json,
+                    loaded_at
+                )
+                VALUES (?, ?, ?, ?)
+                """, (pokemon_id, stat_id, json.dumps(stat), loaded_at)
+            )
+
+def main():
+    with duckdb.connect('pokemon.duckdb') as poke_db:
+        pokemon_index = get_pokemon_index()
+        create_raw_table(poke_db)
+        load_raw_pokemon(poke_db, pokemon_index)
+
+if __name__ == "__main__":
+    main()
+>>>>>>> Stashed changes
