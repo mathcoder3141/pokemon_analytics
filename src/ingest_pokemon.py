@@ -9,7 +9,7 @@ def get_pokemon_index():
     a list containing all available Pokemon records.
     Handles API pagination through the `next` response key.
     """
-    
+
     url = "https://pokeapi.co/api/v2/pokemon/"
     all_pokemon = []
     while url:
@@ -18,7 +18,7 @@ def get_pokemon_index():
         data = response.json()
         all_pokemon.extend(data["results"])
         url = data["next"]
-    
+
     return all_pokemon
 
 def create_raw_table(conn):
@@ -79,7 +79,7 @@ def create_raw_table(conn):
             PRIMARY KEY (pokemon_id, move_id)
         );
         """
-        )
+    )
 
     conn.execute(
         """
@@ -91,7 +91,7 @@ def create_raw_table(conn):
             PRIMARY KEY (pokemon_id, ability_id)
         );
         """
-        )
+    )
 
     conn.execute(
         """
@@ -103,7 +103,7 @@ def create_raw_table(conn):
             PRIMARY KEY (pokemon_id, stat_id)
         );
         """
-        )
+    )
 
     conn.execute(
         """
@@ -115,7 +115,7 @@ def create_raw_table(conn):
             PRIMARY KEY (pokemon_id, type_id)
         );
         """
-        )
+    )
 
 def load_raw_pokemon(conn, pokemon_index):
     """
@@ -130,10 +130,10 @@ def load_raw_pokemon(conn, pokemon_index):
     for index, pokemon in enumerate(pokemon_index, start=1):
         print(f"Loading {index}/{total}: {pokemon['name']}")
 
-        detail_response = Session.get(pokemon["url"], timeout = 30)
+        detail_response = session.get(pokemon["url"], timeout = 30)
         detail_response.raise_for_status()
         pokemon_details = detail_response.json()
-        
+
         pokemon_id = pokemon_details['id']
         pokemon_name = pokemon_details['name']
         source_url = pokemon["url"]
@@ -142,7 +142,7 @@ def load_raw_pokemon(conn, pokemon_index):
         pokemon_abilities = pokemon_details['abilities']
         pokemon_stats = pokemon_details['stats']
         pokemon_types = pokemon_details['types']
-        
+
         conn.execute(
             """
             INSERT INTO raw_pokemon (
