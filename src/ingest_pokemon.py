@@ -3,11 +3,35 @@ import requests
 import json
 from datetime import datetime, timezone
 
-poke_db = duckdb.connect('pokemon.duckdb')
+def get_pokemon_index():
+    """
+    Queries the Pokemon endpoint of PokeAPI and returns
+    a list containing all available Pokemon records.
+    Handles API pagination through the `next` response key.
+    """
+    
+    url = "https://pokeapi.co/api/v2/pokemon/"
+    all_pokemon = []
+    while url:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        all_pokemon.extend(data["results"])
+        url = data["next"]
+    
+    return all_pokemon
 
-url = "https://pokeapi.co/api/v2/pokemon/"
+def create_raw_table(conn):
+    """
+    Creates the raw Pokemon table in DuckDB.
+    Drops any existing table to perform a full refresh.
+    """
 
-all_pokemon = []
+    conn.execute(
+        """
+        DROP TABLE IF EXISTS raw_pokemon;
+        """
+    )
 
     conn.execute(
         """
@@ -101,26 +125,23 @@ def load_raw_pokemon(conn, pokemon_index):
     loaded_at = datetime.now(timezone.utc)
     total = len(pokemon_index)
 
-for index, pokemon in enumerate(all_pokemon, start=1):
-    print(f"Loading {index}/{total}: {pokemon['name']}")
+    session = requests.Session()
 
-    detail_response = requests.get(pokemon["url"])
-    detail_response.raise_for_status()
-    pokemon_details = detail_response.json()
-    
-    pokemon_id = pokemon_details['id']
-    pokemon_name = pokemon_details['name']
-    source_url = pokemon["url"]
-    
+    for index, pokemon in enumerate(pokemon_index, start=1):
+        print(f"Loading {index}/{total}: {pokemon['name']}")
+
+        detail_response = Session.get(pokemon["url"], timeout = 30)
+        detail_response.raise_for_status()
         pokemon_details = detail_response.json()
         
         pokemon_id = pokemon_details['id']
         pokemon_name = pokemon_details['name']
+        source_url = pokemon["url"]
+
         pokemon_moves = pokemon_details['moves']
         pokemon_abilities = pokemon_details['abilities']
         pokemon_stats = pokemon_details['stats']
         pokemon_types = pokemon_details['types']
-        source_url = pokemon["url"]
         
         conn.execute(
             """
