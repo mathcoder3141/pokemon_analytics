@@ -9,38 +9,6 @@ url = "https://pokeapi.co/api/v2/pokemon/"
 
 all_pokemon = []
 
-<<<<<<< Updated upstream
-while url:
-    response = requests.get(url)
-    response.raise_for_status()
-
-    data = response.json()
-
-    all_pokemon.extend(data["results"])
-
-    url = data["next"]
-
-poke_db.execute(
-    """
-    DROP TABLE IF EXISTS raw_pokemon;
-    """
-)
-
-poke_db.execute(
-    """
-    CREATE TABLE raw_pokemon (
-        id INTEGER PRIMARY KEY,
-        name VARCHAR,
-        raw_json JSON,
-        loaded_at TIMESTAMPTZ,
-        source_url VARCHAR
-    );
-    """
-)
-
-loaded_at = datetime.now(timezone.utc)
-total = len(all_pokemon)
-=======
     conn.execute(
         """
         DROP TABLE IF EXISTS raw_pokemon_moves;
@@ -132,7 +100,6 @@ def load_raw_pokemon(conn, pokemon_index):
     """
     loaded_at = datetime.now(timezone.utc)
     total = len(pokemon_index)
->>>>>>> Stashed changes
 
 for index, pokemon in enumerate(all_pokemon, start=1):
     print(f"Loading {index}/{total}: {pokemon['name']}")
@@ -145,22 +112,6 @@ for index, pokemon in enumerate(all_pokemon, start=1):
     pokemon_name = pokemon_details['name']
     source_url = pokemon["url"]
     
-<<<<<<< Updated upstream
-    poke_db.execute(
-        """
-        INSERT INTO raw_pokemon (
-            id,
-            name,
-            raw_json,
-            loaded_at,
-            source_url
-        )
-        VALUES (?, ?, ?, ?, ?)
-        """, (pokemon_id, pokemon_name, json.dumps(pokemon_details), loaded_at, source_url)
-    )
-    
-poke_db.close()
-=======
         pokemon_details = detail_response.json()
         
         pokemon_id = pokemon_details['id']
@@ -256,4 +207,3 @@ def main():
 
 if __name__ == "__main__":
     main()
->>>>>>> Stashed changes
