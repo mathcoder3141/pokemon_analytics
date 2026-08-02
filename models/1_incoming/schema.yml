@@ -1,12 +1,90 @@
-
 version: 2
 
 models:
-  - name: raw_pokemon
-    description: "A starter dbt model"
+  - name: incoming_pokemon
+    description: "A model that is designed to contain all the Pokemon details returned by the Pokemon API."
     columns:
       - name: id
-        description: "The primary key for this table"
+        data_type: integer
+        description: "The unique identifier for the Pokemon."
         data_tests:
           - unique
           - not_null
+
+      - name: name
+        data_type: varchar
+        description: "The name of the Pokemon."
+
+      - name: raw_json
+        data_type: json
+        description: "The JSON response of the Pokemon. Contains all charicteristics related to the Pokemon."
+
+      - name: loaded_at
+        data_type: timestamp with time zone
+        description: "The timestamp in UTC of when the record was added to the database."
+
+      - name: source_url
+        data_type: varchar
+        description: "The API url for the Pokemon."
+
+  - name: incoming_pokemon_types
+    description: ""
+    columns:
+      - name: pokemon_id
+        data_type: integer
+        description: "The ID of the Pokemon this set of types relate to."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('incoming_pokemon')
+                field: id
+
+      - name: type_id
+        data_type: integer
+        description: ""
+
+      - name: type_json
+        data_type: json
+        description: ""
+
+      - name: loaded_at
+        data_type: timestamp with time zone
+        description: ""
+
+  - name: incoming_pokemon_stats
+    description: ""
+    columns:
+      - name: pokemon_id
+        data_type: integer
+        description: ""
+
+      - name: stat_id
+        data_type: integer
+        description: ""
+
+      - name: stat_json
+        data_type: json
+        description: ""
+
+      - name: loaded_at
+        data_type: timestamp with time zone
+        description: ""
+
+  - name: incoming_pokemon_moves
+    description: ""
+    columns:
+      - name: pokemon_id
+        data_type: integer
+        description: ""
+
+      - name: move_id
+        data_type: integer
+        description: ""
+
+      - name: move_json
+        data_type: json
+        description: ""
+
+      - name: loaded_at
+        data_type: timestamp with time zone
+        description: ""
