@@ -1,2 +1,7 @@
 *.duckdb
 *.erd
+.gitkeep
+package-lock.yml
+target/
+logs/
+dbt_packages/

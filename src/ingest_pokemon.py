@@ -9,7 +9,7 @@ def get_pokemon_index():
     a list containing all available Pokemon records.
     Handles API pagination through the `next` response key.
     """
-    
+
     url = "https://pokeapi.co/api/v2/pokemon/"
     all_pokemon = []
     while url:
@@ -18,7 +18,7 @@ def get_pokemon_index():
         data = response.json()
         all_pokemon.extend(data["results"])
         url = data["next"]
-    
+
     return all_pokemon
 
 def create_raw_table(conn):
@@ -34,15 +34,87 @@ def create_raw_table(conn):
     )
 
     conn.execute(
-    """
-    CREATE TABLE raw_pokemon (
-        id INTEGER PRIMARY KEY,
-        name VARCHAR,
-        raw_json JSON,
-        loaded_at TIMESTAMPTZ,
-        source_url VARCHAR
-    );
-    """
+        """
+        DROP TABLE IF EXISTS raw_pokemon_moves;
+        """
+    )
+
+    conn.execute(
+        """
+        DROP TABLE IF EXISTS raw_pokemon_abilities;
+        """
+    )
+
+    conn.execute(
+        """
+        DROP TABLE IF EXISTS raw_pokemon_stats;
+        """
+    )
+
+    conn.execute(
+        """
+        DROP TABLE IF EXISTS raw_pokemon_types;
+        """
+    )
+
+    conn.execute(
+        """
+        CREATE TABLE raw_pokemon (
+            id INTEGER PRIMARY KEY,
+            name VARCHAR,
+            raw_json JSON,
+            loaded_at TIMESTAMPTZ,
+            source_url VARCHAR
+        );
+        """
+    )
+
+    conn.execute(
+        """
+        CREATE TABLE raw_pokemon_moves (
+            pokemon_id INTEGER,
+            move_id INTEGER,
+            move_json JSON,
+            loaded_at TIMESTAMPTZ,
+            PRIMARY KEY (pokemon_id, move_id)
+        );
+        """
+    )
+
+    conn.execute(
+        """
+        CREATE TABLE raw_pokemon_abilities (
+            pokemon_id INTEGER,
+            ability_id INTEGER,
+            ability_json JSON,
+            loaded_at TIMESTAMPTZ,
+            PRIMARY KEY (pokemon_id, ability_id)
+        );
+        """
+    )
+
+    conn.execute(
+        """
+        CREATE TABLE raw_pokemon_stats (
+            pokemon_id INTEGER,
+            stat_id INTEGER,
+            stat_json JSON,
+            loaded_at TIMESTAMPTZ,
+            PRIMARY KEY (pokemon_id, stat_id)
+        );
+        """
+    )
+
+    conn.execute(
+        """
+        CREATE TABLE raw_pokemon_types (
+            pokemon_id INTEGER,
+            type_id INTEGER,
+            type_json JSON,
+            loaded_at TIMESTAMPTZ,
+            PRIMARY KEY (pokemon_id, type_id)
+        );
+        """
     )
 
 def load_raw_pokemon(conn, pokemon_index):
@@ -54,19 +126,23 @@ def load_raw_pokemon(conn, pokemon_index):
     total = len(pokemon_index)
 
     session = requests.Session()
-    
+
     for index, pokemon in enumerate(pokemon_index, start=1):
         print(f"Loading {index}/{total}: {pokemon['name']}")
 
         detail_response = session.get(pokemon["url"], timeout = 30)
         detail_response.raise_for_status()
-    
         pokemon_details = detail_response.json()
-        
+
         pokemon_id = pokemon_details['id']
         pokemon_name = pokemon_details['name']
         source_url = pokemon["url"]
-        
+
+        pokemon_moves = pokemon_details['moves']
+        pokemon_abilities = pokemon_details['abilities']
+        pokemon_stats = pokemon_details['stats']
+        pokemon_types = pokemon_details['types']
+
         conn.execute(
             """
             INSERT INTO raw_pokemon (
@@ -80,7 +156,71 @@ def load_raw_pokemon(conn, pokemon_index):
             """, (pokemon_id, pokemon_name, json.dumps(pokemon_details), loaded_at, source_url)
         )
 
-def main(): 
+        for move in pokemon_moves:
+            move_url = move["move"]["url"]
+
+            move_id = move_url.rstrip("/").split("/")[-1]
+            conn.execute(
+                """
+                INSERT INTO raw_pokemon_moves (
+                    pokemon_id,
+                    move_id,
+                    move_json,
+                    loaded_at
+                )
+                VALUES (?, ?, ?, ?)
+                """, (pokemon_id, move_id, json.dumps(move), loaded_at)
+            )
+
+        for ability in pokemon_abilities:
+            ability_url = ability["ability"]["url"]
+
+            ability_id = ability_url.rstrip("/").split("/")[-1]
+            conn.execute(
+                """
+                INSERT INTO raw_pokemon_abilities (
+                    pokemon_id,
+                    ability_id,
+                    ability_json,
+                    loaded_at
+                )
+                VALUES (?, ?, ?, ?)
+                """, (pokemon_id, ability_id, json.dumps(ability), loaded_at)
+            )
+
+        for typ in pokemon_types:
+            type_url = typ["type"]["url"]
+
+            type_id = type_url.rstrip("/").split("/")[-1]
+            conn.execute(
+                """
+                INSERT INTO raw_pokemon_types (
+                    pokemon_id,
+                    type_id,
+                    type_json,
+                    loaded_at
+                )
+                VALUES (?, ?, ?, ?)
+                """, (pokemon_id, type_id, json.dumps(typ), loaded_at)
+            )
+
+        for stat in pokemon_stats:
+            stat_url = stat["stat"]["url"]
+
+            stat_id = stat_url.rstrip("/").split("/")[-1]
+            conn.execute(
+                """
+                INSERT INTO raw_pokemon_stats (
+                    pokemon_id,
+                    stat_id,
+                    stat_json,
+                    loaded_at
+                )
+                VALUES (?, ?, ?, ?)
+                """, (pokemon_id, stat_id, json.dumps(stat), loaded_at)
+            )
+
+def main():
     with duckdb.connect('pokemon.duckdb') as poke_db:
         pokemon_index = get_pokemon_index()
         create_raw_table(poke_db)

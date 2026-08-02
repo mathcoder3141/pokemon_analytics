@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: pokemon
+    schema: main
+
+    tables:
+      - name: raw_pokemon
+      - name: raw_pokemon_moves
+      - name: raw_pokemon_abilities
+      - name: raw_pokemon_types
+      - name: raw_pokemon_stats
