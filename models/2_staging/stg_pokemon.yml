@@ -159,6 +159,10 @@ models:
                 to: ref('incoming_pokemon')
                 field: id
 
+      - name: ability_id
+        data_type: integer
+        description: "Unique identifier for an Ability."
+
       - name: ability_name
         data_type: varchar
         description: "The name of the ability the Pokémon may have."
