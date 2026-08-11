@@ -21,18 +21,56 @@ models:
 
       - name: loaded_at
         data_type: timestamp with time zone
-        description: "The timestamp in UTC of when the record was added to the database."
+        description: "{{ doc('loaded_at') }}"
 
       - name: source_url
         data_type: varchar
         description: "The API url for the Pokemon."
 
-  - name: incoming_pokemon_types
-    description: ""
+  - name: incoming_pokemon_abilities
+    description: "A model that is desgned to contain all the details of a Pokemon's Ability."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - pokemon_id
+              - ability_id
+
     columns:
       - name: pokemon_id
         data_type: integer
-        description: "The ID of the Pokemon this set of types relate to."
+        description: "{{ doc('pokemon_id') }}. This references the Pokemon that has the designated ability."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('incoming_pokemon')
+                field: id
+
+      - name: ability_id
+        data_type: integer
+        description: "The unique identifier for the Ability."
+
+      - name: ability_json
+        data_type: json
+        description: "The JSON response for the Pokemon's Ability."
+
+      - name: loaded_at
+        data_type: timestamp with time zone
+        description: "{{ doc('loaded_at') }}"
+
+  - name: incoming_pokemon_types
+    description: "A model that is desgned to contain all the details of a Pokemon's type."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - pokemon_id
+              - type_id
+
+    columns:
+      - name: pokemon_id
+        data_type: integer
+        description: "{{ doc('pokemon_id') }}. This references the Pokemon that has the designated type."
         data_tests:
           - relationships:
               arguments:
@@ -41,50 +79,74 @@ models:
 
       - name: type_id
         data_type: integer
-        description: ""
+        description: "The unique identifier for the Type."
 
       - name: type_json
         data_type: json
-        description: ""
+        description: "The JSON response for the Pokemon's type."
 
       - name: loaded_at
         data_type: timestamp with time zone
-        description: ""
+        description: "{{ doc('loaded_at') }}"
 
   - name: incoming_pokemon_stats
-    description: ""
+    description: "A model that is desgned to contain all the details of the Pokemon's stats."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - pokemon_id
+              - stat_id
+
     columns:
       - name: pokemon_id
         data_type: integer
-        description: ""
+        description: "{{ doc('pokemon_id') }}. This references the Pokemon the stat applies to."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('incoming_pokemon')
+                field: id
 
       - name: stat_id
         data_type: integer
-        description: ""
+        description: "The unique identifier for the stat."
 
       - name: stat_json
         data_type: json
-        description: ""
+        description: "The JSON response for a Pokemon's stat."
 
       - name: loaded_at
         data_type: timestamp with time zone
-        description: ""
+        description: "{{ doc('loaded_at') }}"
 
   - name: incoming_pokemon_moves
-    description: ""
+    description: "A model that is desgned to contain all the details of the Pokemon's moves."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - pokemon_id
+              - move_id
+
     columns:
       - name: pokemon_id
         data_type: integer
-        description: ""
+        description: "{{ doc('pokemon_id') }}. This references the Pokemon that learns the move."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('incoming_pokemon')
+                field: id
 
       - name: move_id
         data_type: integer
-        description: ""
+        description: "THe unique identifier for the Pokemon's move."
 
       - name: move_json
         data_type: json
-        description: ""
+        description: "The JSON response for a Pokemon's move."
 
       - name: loaded_at
         data_type: timestamp with time zone
-        description: ""
+        description: "{{ doc('loaded_at') }}"

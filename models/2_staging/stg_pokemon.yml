@@ -1,0 +1,176 @@
+version: 2
+
+models:
+  - name: stg_pokemon
+    description: "A model that is designed to contain all the Pokemon details returned by the Pokemon API."
+    columns:
+      - name: pokemon_id
+        data_type: integer
+        description: "The unique identifier for the Pokemon."
+        data_tests:
+          - unique
+          - not_null
+
+      - name: name
+        data_type: varchar
+        description: "The name of the Pokemon."
+
+      - name: base_experience
+        data_type: integer
+        description: "The base experience gained for defeating this Pokémon."
+
+      - name: height
+        data_type: integer
+        description: "The height of this Pokémon in decimetres."
+
+      - name: species_name
+        data_type: varchar
+        description: "The name of the species this Pokemon is. Attributes of a Pokémon species are shared across all varieties of Pokémon within the species. A good example is Wormadam; Wormadam is the species which can be found in three different varieties, Wormadam-Trash, Wormadam-Sandy and Wormadam-Plant."
+
+      - name: species_url
+        data_type: varchar
+        description: "The URL for the API response for this species."
+
+      - name: weight
+        data_type: integer
+        description: "The weight of this pokemon in hectograms."
+
+  - name: stg_pokemon_types
+    description: "A staging model containing information about a Pokemon's typings."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - pokemon_id
+              - type_id
+
+    columns:
+      - name: pokemon_id
+        data_type: integer
+        description: "{{ doc('pokemon_id') }}. This references the Pookemon that a stat applies to."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('incoming_pokemon')
+                field: id
+
+      - name: type_id
+        data_type: integer
+        description: "The unique identifier for a Pokemon type."
+
+      - name: type_name
+        data_type: varchar
+        description: "The name of the Type the referenced Pokémon has."
+
+      - name: slot
+        data_type: integer
+        description: "The order the Pokémon's types are listed in."
+
+      - name: type_url
+        data_type: varchar
+        description: "The URL for the API response of a Type."
+
+  - name: stg_pokemon_stats
+    description: "A staging model containing all the information of a Pokemon's stats."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - pokemon_id
+              - stat_id
+
+    columns:
+      - name: pokemon_id
+        data_type: integer
+        description: "{{ doc('pokemon_id') }}. This references the Pookemon that a stat applies to."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('incoming_pokemon')
+                field: id
+
+      - name: stat_id
+        data_type: integer
+        description: "The unique identifier for a stat."
+
+      - name: stat_name
+        data_type: varchar
+        description: "The name of a given stat." 
+
+      - name: slot
+        data_type: integer
+        description: "A column that describes the slot a Pokemon's stat is in."
+
+      - name: effort
+        data_type: integer
+        description: "The effort points (EV) the Pokémon has in the stat."
+
+      - name: stat_url
+        data_type: varchar
+        description: "The URL for the API response of a move."
+
+  - name: stg_pokemon_moves
+    description: "A staging model containing all the moves a Pokemon can learn."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - pokemon_id
+              - move_id
+
+    columns:
+      - name: pokemon_id
+        data_type: integer
+        description: "{{ doc('pokemon_id') }}. This references the Pokemon that learns the move."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('incoming_pokemon')
+                field: id
+
+      - name: move_id
+        data_type: integer
+        description: "THe unique identifier for the Pokemon's move."
+
+      - name: move_name
+        data_type: varchar
+        description: "The name of the Pomeon move."
+
+      - name: move_url
+        data_type: varchar
+        description: "The URL for the API response of the move."
+
+  - name: stg_pokemon_abilities
+    description: "A staging model of all of the abilities a Pokemon can possibly have."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - pokemon_id
+              - ability_id
+
+    columns:
+      - name: pokemon_id
+        data_type: integer
+        description: "{{ doc('pokemon_id') }}. This references the Pokemon that has the designated ability."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('incoming_pokemon')
+                field: id
+
+      - name: ability_name
+        data_type: varchar
+        description: "The name of the ability the Pokémon may have."
+
+      - name: ability_url
+        data_type: varchar
+        description: "The URL for the API response for the Pokemon's ability."
+
+      - name: is_hidden
+        data_type: boolean
+        description: "Whether or not this is a hidden ability."
+
+      - name: slot
+        data_type: integer
+        description: "The slot thes ability occupies in this Pokémon species."
