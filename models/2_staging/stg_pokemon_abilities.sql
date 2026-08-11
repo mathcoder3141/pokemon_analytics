@@ -14,7 +14,8 @@ abilities as (
 
     select
         pokemon_id,
-    
+        ability_id,
+        
         json_extract_string(
             ability_json,
             '$.ability.name'
