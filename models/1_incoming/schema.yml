@@ -150,3 +150,38 @@ models:
       - name: loaded_at
         data_type: timestamp with time zone
         description: "{{ doc('loaded_at') }}"
+
+  - name: incoming_pokemon_species
+    description: "A model that is desgned to contain all the details of a Pokemon species."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - pokemon_id
+              - species_id
+
+    columns:
+      - name: pokemon_id
+        data_type: integer
+        description: "{{ doc('pokemon_id') }}. This references the Pokemon species."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('incoming_pokemon')
+                field: id
+
+      - name: species_id
+        data_type: integer
+        description: "The unique ID for a Pokemon species."
+
+      - name: species_json
+        data_type: json
+        description: "The JSON response for a Pokemon Species."
+
+      - name: loaded_at
+        data_type: timestamp with time zone
+        description: "{{ doc('loaded_at') }}"
+
+      - name: source_url
+        data_type: varchar
+        description: "The API URL for the Pokemon species."

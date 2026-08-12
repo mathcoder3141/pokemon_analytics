@@ -39,3 +39,5 @@ models:
       +schema: incoming
     2_staging:
       +schema: staging
+    3_intermediate:
+      +schema: intermedate
