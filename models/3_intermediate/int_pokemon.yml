@@ -1,0 +1,50 @@
+version: 2
+
+models:
+  - name: int_pokemon_moves
+    description: >
+      An intermediate model containing additioanl information about a pokemon move.
+      Details what level and how a Pokemon learns a given move.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - pokemon_id
+              - move_id
+              - version_group
+              - learn_method
+              - level_learned_at
+
+    columns:
+      - name: pokemon_id
+        data_type: integer
+        description: "{{ doc('pokemon_id') }}. This references the Pokemon that learns the move."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('incoming_pokemon')
+                field: id
+
+      - name: move_id
+        data_type: integer
+        description: "THe unique identifier for the Pokemon's move."
+
+      - name: move_name
+        data_type: varchar
+        description: "The name of the Pomeon move."
+
+      - name: move_url
+        data_type: varchar
+        description: "The URL for the API response of the move."
+
+      - name: learn_method
+        data_type: varchar
+        description: "The method by which the move is learned."
+
+      - name: level_learned_at
+        data_type: integer
+        description: "The minimum level to learn the move."
+
+      - name: version_group
+        data_type: varchar
+        description: "The version group in which the move is learned."

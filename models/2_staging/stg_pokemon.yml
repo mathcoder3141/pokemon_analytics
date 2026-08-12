@@ -178,3 +178,78 @@ models:
       - name: slot
         data_type: integer
         description: "The slot thes ability occupies in this Pokémon species."
+
+  - name: stg_pokemon_species
+    description: "A staging model for the Pokemon species. This describes the Pokemon species more in depth."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - pokemon_id
+              - species_id
+
+    columns:
+      - name: pokemon_id
+        data_type: integer
+        description: "{{ doc('pokemon_id') }}. This references the Pokemon that has the designated ability."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('incoming_pokemon')
+                field: id
+
+      - name: species_id
+        data_type: integer
+        description: "The unique ID for a Pokemon species."
+
+      - name: base_happiness
+        data_type: integer
+        description: "The happiness when caught by a normal Pokéball; up to 255. The higher the number, the happier the Pokémon."
+
+      - name: capture_rate
+        data_type: integer
+        description: "The base capture rate; up to 255. The higher the number, the easier the catch."
+
+      - name: growth_rate_name
+        data_type: varchar
+        description: "The rate at which this Pokémon species gains levels."
+
+      - name: habitat_name
+        data_type: varchar
+        description: "The habitat this Pokémon species can be encountered in."
+
+      - name: generation_name
+        data_type: varchar
+        description: "The generation this Pokémon species was introduced in."
+
+      - name: has_gender_differences
+        data_type: boolean
+        description: "Whether or not this Pokémon has visual gender differences."
+
+      - name: hatch_counter
+        data_type: integer
+        description: >
+          Initial hatch counter: one must walk Y × (hatch_counter + 1) steps before this Pokémon's egg hatches, 
+          unless utilizing bonuses like Flame Body's. Y varies per generation. 
+          
+          In Generations II, III, and VII, Egg cycles are 256 steps long. 
+          In Generation IV, Egg cycles are 255 steps long. 
+          In Pokémon Brilliant Diamond and Shining Pearl, Egg cycles are also 255 steps long, but are shorter on special dates. 
+          In Generations V and VI, Egg cycles are 257 steps long. 
+          In Pokémon Sword and Shield, and in Pokémon Scarlet and Violet, Egg cycles are 128 steps long.
+
+      - name: is_baby
+        data_type: boolean
+        description: "Whether or not this is a baby Pokémon."
+
+      - name: is_mythical
+        data_type: boolean
+        description: "Whether or not this is a mythical Pokémon."
+
+      - name: is_legendary
+        data_type: boolean
+        description: "Whether or not this is a legendary Pokémon."
+
+      - name: species_name
+        data_type: varchar
+        description: "The name of the Pokemon."

@@ -10,3 +10,4 @@ sources:
       - name: raw_pokemon_abilities
       - name: raw_pokemon_types
       - name: raw_pokemon_stats
+      - name: raw_pokemon_species

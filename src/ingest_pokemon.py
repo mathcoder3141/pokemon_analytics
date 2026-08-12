@@ -59,6 +59,12 @@ def create_raw_table(conn):
 
     conn.execute(
         """
+        DROP TABLE IF EXISTS raw_pokemon_species;
+        """
+    )
+
+    conn.execute(
+        """
         CREATE TABLE raw_pokemon (
             id INTEGER PRIMARY KEY,
             name VARCHAR,
@@ -117,6 +123,19 @@ def create_raw_table(conn):
         """
     )
 
+    conn.execute(
+        """
+        CREATE TABLE raw_pokemon_species (
+            pokemon_id INTEGER,
+            species_id INTEGER,
+            species_json JSON,
+            loaded_at TIMESTAMPTZ,
+            source_url VARCHAR,
+            PRIMARY KEY (pokemon_id, species_id)
+        );
+        """
+    )
+
 def load_raw_pokemon(conn, pokemon_index):
     """
     Retrieves detailed Pokemon records from PokeAPI
@@ -136,6 +155,11 @@ def load_raw_pokemon(conn, pokemon_index):
 
         pokemon_id = pokemon_details['id']
         pokemon_name = pokemon_details['name']
+        species_url = pokemon_details['species']['url']
+        species_response = session.get(species_url, timeout = 30)
+        species_response.raise_for_status()
+        species_details = species_response.json()
+        species_id = species_url.rstrip("/").split("/")[-1]
         source_url = pokemon["url"]
 
         pokemon_moves = pokemon_details['moves']
@@ -155,6 +179,20 @@ def load_raw_pokemon(conn, pokemon_index):
             VALUES (?, ?, ?, ?, ?)
             """, (pokemon_id, pokemon_name, json.dumps(pokemon_details), loaded_at, source_url)
         )
+
+        conn.execute(
+            """
+            INSERT INTO raw_pokemon_species (
+                pokemon_id,
+                species_id,
+                species_json,
+                loaded_at,
+                source_url
+            )
+            VALUES (?, ?, ?, ?, ?)
+            """, (pokemon_id, species_id, json.dumps(species_details), loaded_at, species_url)
+        )
+
 
         for move in pokemon_moves:
             move_url = move["move"]["url"]

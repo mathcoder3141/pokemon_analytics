@@ -102,17 +102,18 @@ Objectives:
 
 ---
 
-## ⏳ Phase 4 – Build dbt Models
+## ✅ Phase 4 – Build dbt Models
 
 Create staging models that normalize the raw JSON into analytical tables.
 
 Potential models include:
 
 * `stg_pokemon`
-* `stg_types`
-* `stg_abilities`
-* `stg_moves`
-* `stg_stats`
+* `stg_pokemon_types`
+* `stg_pokemon_abilities`
+* `stg_pokemon_moves`
+* `stg_pokemon_stats`
+* `stg_pokemon_species`
 
 ---
 
