@@ -31,7 +31,7 @@ final as (
                 stat_json,
                 '$.base_stat'
             ) as integer
-        ) as slot,
+        ) as base_stat,
         
         cast(
             json_extract(
