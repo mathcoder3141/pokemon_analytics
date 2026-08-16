@@ -11,6 +11,10 @@ models:
           - unique
           - not_null
 
+      - name: species_id
+        data_type: integer
+        description: "The unique ID for a Pokemon species."
+
       - name: name
         data_type: varchar
         description: "The name of the Pokemon."
@@ -97,9 +101,9 @@ models:
         data_type: varchar
         description: "The name of a given stat." 
 
-      - name: slot
+      - name: base_stat
         data_type: integer
-        description: "A column that describes the slot a Pokemon's stat is in."
+        description: "The base value of the stat."
 
       - name: effort
         data_type: integer

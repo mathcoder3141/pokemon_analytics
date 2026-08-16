@@ -41,3 +41,5 @@ models:
       +schema: staging
     3_intermediate:
       +schema: intermedate
+    4_marts:
+      +schema: marts
