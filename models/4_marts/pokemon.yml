@@ -1,0 +1,224 @@
+version: 2
+
+models:
+  - name: bridge_pokemon_moves
+    description: >
+      An intermediate model containing additioanl information about a pokemon move.
+      Details what level and how a Pokemon learns a given move.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - pokemon_id
+              - move_id
+              - version_group
+              - learn_method
+              - level_learned_at
+    
+    columns:
+      - name: pokemon_id
+        data_type: integer
+        description: "{{ doc('pokemon_id') }}. This references the Pokemon that learns the move."
+
+      - name: move_id
+        data_type: integer
+        description: "THe unique identifier for the Pokemon's move."
+
+      - name: learn_method
+        data_type: varchar
+        description: "The method by which the move is learned."
+
+      - name: level_learned_at
+        data_type: integer
+        description: "The minimum level to learn the move."
+
+      - name: level_learned_at
+        data_type: integer
+        description: "The version group in which the move is learned."
+
+  - name: dim_pokemon_moves
+    description: "A dimensional model describeing the moves within Pokemon."
+    columns:
+      - name: move_id
+        data_type: integer
+        description: "THe unique identifier for the Pokemon's move."
+        data_tests:
+          - unique
+          - not_null
+
+      - name: move_name
+        data_type: varchar
+        description: "The name of the Pomeon move."
+
+      - name: move_url
+        data_type: varchar
+        description: "The URL for the API response of the move."
+
+  - name: dim_pokemon_species
+    description: > 
+      A model for the Pokemon species. This describes the Pokemon species more in depth.
+      Graain is species so number of expected rows is the number of Pokemon in the Pokedex.
+
+      The difference between the `dim_pokemon_species` model and `dim_pokemon` model is that `dim_pokemon` has multiple
+      records per species to take into account multiple forms e.g., multiple forms of Burmy.
+    columns:
+      - name: species_id
+        data_type: integer
+        description: "The unique ID for a Pokemon species."
+        data_tests:
+          - unique
+          - not_null
+
+      - name: species_name
+        data_type: varchar
+        description: "The name of the Pokemon species."
+
+      - name: base_happiness
+        data_type: integer
+        description: "The happiness when caught by a normal Pokéball; up to 255. The higher the number, the happier the Pokémon."
+
+      - name: capture_rate
+        data_type: integer
+        description: "The base capture rate; up to 255. The higher the number, the easier the catch."
+
+      - name: growth_rate_name
+        data_type: varchar
+        description: "The rate at which this Pokémon species gains levels."
+
+      - name: habitat_name
+        data_type: varchar
+        description: "The habitat this Pokémon species can be encountered in."
+
+      - name: generation_name
+        data_type: varchar
+        description: "The generation this Pokémon species was introduced in."
+
+      - name: has_gender_differences
+        data_type: boolean
+        description: "Whether or not this Pokémon has visual gender differences."
+
+      - name: hatch_counter
+        data_type: integer
+        description: >
+          Initial hatch counter: one must walk Y × (hatch_counter + 1) steps before this Pokémon's egg hatches, 
+          unless utilizing bonuses like Flame Body's. Y varies per generation. 
+          
+          In Generations II, III, and VII, Egg cycles are 256 steps long. 
+          In Generation IV, Egg cycles are 255 steps long. 
+          In Pokémon Brilliant Diamond and Shining Pearl, Egg cycles are also 255 steps long, but are shorter on special dates. 
+          In Generations V and VI, Egg cycles are 257 steps long. 
+          In Pokémon Sword and Shield, and in Pokémon Scarlet and Violet, Egg cycles are 128 steps long.
+
+      - name: is_baby
+        data_type: boolean
+        description: "Whether or not this is a baby Pokémon."
+
+      - name: is_mythical
+        data_type: boolean
+        description: "Whether or not this is a mythical Pokémon."
+
+      - name: is_legendary
+        data_type: boolean
+        description: "Whether or not this is a legendary Pokémon."
+
+      - name: num_forms
+        data_type: bigint
+        description: "The number of forms the species has."
+
+  - name: dim_pokemon_stats
+    description: "A model containing all the information of a Pokemon's stats. Grain is a Pokemon form."
+    columns:
+      - name: pokemon_id
+        data_type: integer
+        description: "{{ doc('pokemon_id') }}. This references the Pookemon that a stat applies to."
+        data_tests:
+          - unique
+          - not_null
+
+      - name: hp
+        data_type: integer
+        description: "The value for a Pokemon's HP (hit points) stat."
+
+      - name: attack
+        data_type: integer
+        description: "The value for a Pokemon's attack stat."
+
+      - name: special_attack
+        data_type: integer
+        description: "The value for a Pokemon's special attack stat."
+
+      - name: defense
+        data_type: integer
+        description: "The value for a Pokemon's defense stat."
+
+      - name: special_defense
+        data_type: integer
+        description: "The value for a Pokemon's special defense stat."
+
+      - name: speed
+        data_type: integer
+        description: "The value for a Pokemon's speed stat."
+
+      - name: base_stat_total
+        data_type: hugeint
+        description: "The sum of the values for all of the base stats (HP, Attack, Special Attacck, Defense, Special Defense, Speed)"
+
+  - name: dim_pokemon_types
+    description: "A model containing information about a Pokemon's typings. If a Pokemon has multiple types, the types will be condensed into primary/secondary."
+    columns:
+      - name: pokemon_id
+        data_type: integer
+        description: "{{ doc('pokemon_id') }}. This references the Pookemon that a stat applies to."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('incoming_pokemon')
+                field: id
+          - unique
+          - not_null
+
+      - name: primary_type_id
+        data_type: integer
+        description: "The unique identifier for a Pokemon's primary typing."
+
+      - name: secondary_type_id
+        data_type: integer
+        description: "The unique identifier for a Pokemon's secondary typing."
+
+      - name: primary_type_name
+        data_type: varchar
+        description: "The name of the Pokemon's primary typing."
+
+      - name: secondary_type_name
+        data_type: varchar
+        description: "The name of the Pokemon's secondary typing."
+
+  - name: dim_pokemon
+    description: "A model that is designed to contain all the Pokemon details returned by the Pokemon API."
+    columns:
+      - name: pokemon_id
+        data_type: integer
+        description: "The unique identifier for the Pokemon."
+        data_tests:
+          - unique
+          - not_null
+
+      - name: name
+        data_type: varchar
+        description: "The name of the Pokemon."
+
+      - name: base_experience
+        data_type: integer
+        description: "The base experience gained for defeating this Pokémon."
+
+      - name: species_id
+        data_type: integer
+        description: "The identifier for the Pokemon species. Since there are multiple forms of a Pokemon species, this is not unique."
+
+      - name: height
+        data_type: integer
+        description: "The height of this Pokémon in decimetres."
+
+      - name: weight
+        data_type: integer
+        description: "The weight of this pokemon in hectograms."

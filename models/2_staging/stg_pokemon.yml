@@ -201,6 +201,11 @@ models:
       - name: species_id
         data_type: integer
         description: "The unique ID for a Pokemon species."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_pokemon_species')
+                field: species_id
 
       - name: base_happiness
         data_type: integer
