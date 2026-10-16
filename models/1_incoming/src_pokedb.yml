@@ -11,3 +11,5 @@ sources:
       - name: raw_pokemon_types
       - name: raw_pokemon_stats
       - name: raw_pokemon_species
+      - name: raw_types
+      - name: raw_moves
