@@ -21,6 +21,32 @@ def get_pokemon_index():
 
     return all_pokemon
 
+def get_pokemon_types_index():
+
+    url = "https://pokeapi.co/api/v2/type/"
+    all_types = []
+    while url:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        all_types.extend(data["results"])
+        url = data["next"]
+
+    return all_types
+
+def get_pokemon_moves_index():
+
+    url = "https://pokeapi.co/api/v2/move/"
+    all_moves = []
+    while url:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        all_moves.extend(data["results"])
+        url = data["next"]
+
+    return all_moves
+
 def create_raw_table(conn):
     """
     Creates the raw Pokemon table in DuckDB.
@@ -60,6 +86,18 @@ def create_raw_table(conn):
     conn.execute(
         """
         DROP TABLE IF EXISTS raw_pokemon_species;
+        """
+    )
+
+    conn.execute(
+        """
+        DROP TABLE IF EXISTS raw_types;
+        """
+    )
+
+    conn.execute(
+        """
+        DROP TABLE IF EXISTS raw_moves;
         """
     )
 
@@ -132,6 +170,30 @@ def create_raw_table(conn):
             loaded_at TIMESTAMPTZ,
             source_url VARCHAR,
             PRIMARY KEY (pokemon_id, species_id)
+        );
+        """
+    )
+
+    conn.execute(
+        """
+        CREATE TABLE raw_types (
+            id INTEGER PRIMARY KEY,
+            name VARCHAR,
+            raw_json JSON,
+            loaded_at TIMESTAMPTZ,
+            source_url VARCHAR
+        );
+        """
+    )
+
+    conn.execute(
+        """
+        CREATE TABLE raw_moves (
+            id INTEGER PRIMARY KEY,
+            name VARCHAR,
+            raw_json JSON,
+            loaded_at TIMESTAMPTZ,
+            source_url VARCHAR
         );
         """
     )
@@ -258,11 +320,75 @@ def load_raw_pokemon(conn, pokemon_index):
                 """, (pokemon_id, stat_id, json.dumps(stat), loaded_at)
             )
 
+def load_raw_type(conn, type_index):
+    loaded_at = datetime.now(timezone.utc)
+    total = len(type_index)
+
+    session = requests.Session()
+
+    for index, typ in enumerate(type_index, start=1):
+        print(f"Loading {index}/{total}: {typ['name']}")
+
+        detail_response = session.get(typ["url"], timeout = 30)
+        detail_response.raise_for_status()
+        type_details = detail_response.json()
+
+        type_id = type_details['id']
+        type_name = type_details['name']
+        source_url = typ["url"]
+
+        conn.execute(
+            """
+            INSERT INTO raw_types (
+                id,
+                name,
+                raw_json,
+                loaded_at,
+                source_url
+            )
+            VALUES (?, ?, ?, ?, ?)
+            """, (type_id, type_name, json.dumps(type_details), loaded_at, source_url)
+        )
+
+def load_raw_move(conn, move_index):
+    loaded_at = datetime.now(timezone.utc)
+    total = len(move_index)
+
+    session = requests.Session()
+
+    for index, move in enumerate(move_index, start=1):
+        print(f"Loading {index}/{total}: {move['name']}")
+
+        detail_response = session.get(move["url"], timeout = 30)
+        detail_response.raise_for_status()
+        move_details = detail_response.json()
+
+        move_id = move_details['id']
+        move_name = move_details['name']
+        source_url = move["url"]
+
+        conn.execute(
+            """
+            INSERT INTO raw_moves (
+                id,
+                name,
+                raw_json,
+                loaded_at,
+                source_url
+            )
+            VALUES (?, ?, ?, ?, ?)
+            """, (move_id, move_name, json.dumps(move_details), loaded_at, source_url)
+        )
+
 def main():
     with duckdb.connect('pokemon.duckdb') as poke_db:
         pokemon_index = get_pokemon_index()
+        type_index = get_pokemon_types_index()
+        move_index = get_pokemon_moves_index()
         create_raw_table(poke_db)
         load_raw_pokemon(poke_db, pokemon_index)
+        load_raw_type(poke_db, type_index)
+        load_raw_move(poke_db, move_index)
 
 if __name__ == "__main__":
     main()
