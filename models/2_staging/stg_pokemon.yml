@@ -200,7 +200,7 @@ models:
         data_tests:
           - relationships:
               arguments:
-                to: ref('stg_pokemon_species')
+                to: ref('incoming_pokemon_species')
                 field: species_id
 
       - name: base_happiness

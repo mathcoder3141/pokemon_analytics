@@ -193,7 +193,7 @@ models:
 
     columns:
       - name: id
-        data_type: varchar
+        data_type: integer
         description: "The unique identifier for the Move."
         data_tests:
           - unique
@@ -238,7 +238,7 @@ models:
 
       - name: raw_json
         data_type: json
-        description: "The JSON response of the move. Contains all characteristics related to the Type."
+        description: "The JSON response for the type, containing its attributes and type-effectiveness relationships."
 
       - name: loaded_at
         data_type: timestamp with time zone

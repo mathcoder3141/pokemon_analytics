@@ -3,8 +3,11 @@ version: 2
 models:
   - name: bridge_pokemon_moves
     description: >
-      An intermediate model containing additioanl information about a pokemon move.
-      Details what level and how a Pokemon learns a given move.
+      Bridge between Pokémon and moves, preserving:
+        - learning method
+        - level requirement
+        - game version group.
+
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
@@ -19,10 +22,22 @@ models:
       - name: pokemon_id
         data_type: integer
         description: "{{ doc('pokemon_id') }}. This references the Pokemon that learns the move."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_pokemon')
+                field: pokemon_id
 
       - name: move_id
         data_type: integer
         description: "THe unique identifier for the Pokemon's move."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_moves')
+                field: move_id
 
       - name: learn_method
         data_type: varchar
@@ -33,8 +48,10 @@ models:
         description: "The minimum level to learn the move."
 
       - name: version_group
-        data_type: integer
+        data_type: varchar
         description: "The version group in which the move is learned."
+        data_tests:
+          - not_null
 
   - name: dim_pokemon_abilities
     description: "A dimensional model of all of the abilities a Pokemon can possibly have."
@@ -74,24 +91,6 @@ models:
       - name: slot
         data_type: integer
         description: "The slot the ability occupies in this Pokémon species."
-
-  - name: dim_pokemon_moves
-    description: "A dimensional model describeing the moves within Pokemon."
-    columns:
-      - name: move_id
-        data_type: integer
-        description: "THe unique identifier for the Pokemon's move."
-        data_tests:
-          - unique
-          - not_null
-
-      - name: move_name
-        data_type: varchar
-        description: "The name of the Pomeon move."
-
-      - name: move_url
-        data_type: varchar
-        description: "The URL for the API response of the move."
 
   - name: dim_pokemon_species
     description: > 
@@ -311,7 +310,7 @@ models:
                 field: id
 
   - name: dim_type_effectiveness
-    description: "A model that describes the effectivenss of a given move Type against a given Pokemon type."
+    description: "Describes the effectiveness of an attacking move type against a defending Pokémon type."
     columns:
       - name: pk_type_effectiveness
         data_type: varchar
@@ -322,8 +321,9 @@ models:
 
       - name: attacking_type_id
         data_type: integer
-        description: "The unique identifier for the Type of Move that is being used to attack."
+        description: "The identifier of the attacking move type."
         data_tests:
+          - not_null
           - relationships:
               arguments:
                 to: ref('incoming_types')
@@ -331,20 +331,30 @@ models:
 
       - name: attacking_type_name
         data_type: varchar
-        description: "The name of the Type of Move that is being used to attach."
+        description: "The name of the attacking move type."
 
       - name: multiplier
         data_type: double
-        description: "A numerical relation of the Move's effectivenss"
+        description: >
+          The damage multiplier applied based on the attacking move's type and the defending Pokémon's type.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - 0.0
+                  - 0.5
+                  - 1.0
+                  - 2.0
 
       - name: defending_type_name
         data_type: varchar
-        description: "The name of the Type of Pokemon that is defending."
+        description: "The name of the defending pokemon type."
 
       - name: defending_type_id
         data_type: integer
-        description: "The unique identifier for the Type of Pokemon that is defending."
+        description: "The identifier of the defending pokemon type."
         data_tests:
+          - not_null
           - relationships:
               arguments:
                 to: ref('incoming_types')
