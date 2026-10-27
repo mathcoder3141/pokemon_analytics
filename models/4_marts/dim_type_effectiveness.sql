@@ -1,4 +1,9 @@
 select
+    {{ dbt_utils.generate_surrogate_key([
+        'attacking_type.type_id',
+        'defending_type.type_id'
+        ])
+    }} as pk_type_effectiveness,
     attacking_type.type_id as attacking_type_id,
     attacking_type.type_name as attacking_type_name,
     defending_type.type_id  as defending_type_id,

@@ -185,3 +185,65 @@ models:
       - name: source_url
         data_type: varchar
         description: "The API URL for the Pokemon species."
+
+  - name: incoming_moves
+    description: >
+      A model that is designed to hold all of the moves of Pokemon that exist.
+      Moves are the skills of Pokémon in battle. In battle, a Pokémon uses one move each turn.
+
+    columns:
+      - name: id
+        data_type: varchar
+        description: "The unique identifier for the Move."
+        data_tests:
+          - unique
+          - not_null
+      
+      - name: name
+        data_type: varchar
+        description: "The name of the Move."
+      
+      - name: raw_json
+        data_type: json
+        description: "The JSON response of the move. Contains all characteristics related to the Move."
+      
+      - name: loaded_at
+        data_type: timestamp with time zone
+        description: "{{ doc('loaded_at') }}"
+
+      - name: source_url
+        data_type: varchar
+        description: "The API URL for the Move."
+
+  - name: incoming_types
+    description: >
+      A model that is designed to information regarding a Pokemon's type.
+      Types are properties for Pokémon and their moves. 
+      Each type has three properties:
+        - which types of Pokémon it is super effective against
+        - which types of Pokémon it is not very effective against
+        - which types of Pokémon it is completely ineffective against.
+    
+    columns:
+      - name: id
+        data_type: integer
+        description: "The unique identifier for the Type."
+        data_tests:
+          - unique
+          - not_null
+
+      - name: name
+        data_type: varchar
+        description: "The name of the Type."
+
+      - name: raw_json
+        data_type: json
+        description: "The JSON response of the move. Contains all characteristics related to the Type."
+
+      - name: loaded_at
+        data_type: timestamp with time zone
+        description: "{{ doc('loaded_at') }}"
+
+      - name: source_url
+        data_type: varchar
+        description: "The API URL for the Type."
