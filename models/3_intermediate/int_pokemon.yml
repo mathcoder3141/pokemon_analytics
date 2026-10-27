@@ -50,7 +50,7 @@ models:
         description: "The version group in which the move is learned."
 
   - name: int_type_damage_relations
-    description: "A model that describes the effectivenss of a given move Type against a given Pokemon type."
+    description: "Describes the effectiveness of an attacking move type against a defending Pokémon type."
     columns:
       - name: pk_damage_relations
         data_type: varchar
@@ -61,7 +61,7 @@ models:
 
       - name: attacking_type_id
         data_type: integer
-        description: "The unique identifier for the Type of Move that is being used to attack."
+        description: "The identifier of the attacking move's type."
         data_tests:
           - relationships:
               arguments:
@@ -70,7 +70,9 @@ models:
 
       - name: relation
         data_type: varchar
-        description: "A human readable name for the Move's effectivenss e.g., double, half, none."
+        description: >
+          A human-readable category describing the effectiveness of the attacking move's type 
+          against the defending Pokémon's type.
         data_tests:
           - accepted_values:
               arguments:
@@ -81,7 +83,8 @@ models:
 
       - name: multiplier
         data_type: double
-        description: "A numerical relation of the Move's effectivenss"
+        description: >
+          The damage multiplier applied based on the attacking move's type and the defending Pokémon's type.
 
       - name: defending_type_name
         data_type: varchar

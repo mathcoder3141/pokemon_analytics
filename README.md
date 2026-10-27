@@ -15,6 +15,55 @@ Rather than simply consuming an API, this project will demonstrate how data is i
 * Create analytics-ready tables and dashboards
 * Practice software engineering best practices through incremental development
 
+## Architecture
+
+Architecture
+
+PokéAPI
+   |
+   v
+Python ingestion
+   |
+   v
+DuckDB — incoming data
+   |
+   v
+dbt staging models
+   |
+   v
+dbt intermediate models
+   |
+   v
+dbt marts
+
+## Data Model
+
+Models are organized into four layers:
+
+| Layer                 | Purpose                                                 | Examples
+|-----------------------|---------------------------------------------------------|-----------------------------------------------------------
+| 1_incoming     | Retain ingested API data and source payloads                   | incoming_pokemon, incoming_moves, incoming_types
+| 2_staging      | Standardize source data into relational models                 | stg_pokemon, stg_pokemon_moves, stg_pokemon_species
+| 3_intermediate | Apply reusable transformations and unpack nested relationships | int_pokemon_moves, int_type_damage_relations
+| 4_marts        | Expose analytical dimensions and relationship models           | dim_pokemon, dim_moves, dim_pokemon_stats, dim_type_effectiveness, bridge_pokemon_moves
+
+The marts distinguish entities from relationships. For example, `dim_moves` describes moves, while `bridge_pokemon_moves` represents the moves a Pokémon can learn.
+
+`dim_type_effectiveness` describes the type matchup multiplier between an attacking move type and a defending Pokémon type. It represents type effectiveness, not the complete damage calculation for an individual move.
+
+## Data Quality and Documentation
+
+The dbt project uses model and column descriptions alongside data tests to document and validate its data contracts.
+
+Testing includes:
+
+- Unique and non-null checks for key columns
+- Composite uniqueness checks for relationship tables
+- Relationship checks between related models
+- Accepted-value checks for categorical attributes
+
+The intended grain of each model determines which uniqueness tests are appropriate. For example, a Pokémon-to-move relationship has a different grain and purpose from the move dimension.
+
 ## Planned Technology Stack
 
 | Component            | Technology                        |
@@ -117,13 +166,12 @@ Potential models include:
 
 ---
 
-## ⏳ Phase 5 – Analytics Models
+## ✅ Phase 5 – Analytics Models
 
 Build dimensional models including:
 
 * `dim_pokemon`
 * `dim_type`
-* `fact_pokemon_stats`
 * Bridge tables for many-to-many relationships
 
 ---
