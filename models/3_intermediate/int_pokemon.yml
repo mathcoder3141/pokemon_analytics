@@ -48,3 +48,46 @@ models:
       - name: version_group
         data_type: varchar
         description: "The version group in which the move is learned."
+
+  - name: int_type_damage_relations
+    description: "A model that describes the effectivenss of a given move Type against a given Pokemon type."
+    columns:
+      - name: pk_damage_relations
+        data_type: varchar
+        description: "A surrogate key comprised of the attacking type ID and the defending type name."
+        data_tests:
+          - unique
+          - not_null
+
+      - name: attacking_type_id
+        data_type: integer
+        description: "The unique identifier for the Type of Move that is being used to attack."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('incoming_types')
+                field: id
+
+      - name: relation
+        data_type: varchar
+        description: "A human readable name for the Move's effectivenss e.g., double, half, none."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - "double"
+                  - "half"
+                  - "none"
+
+      - name: multiplier
+        data_type: double
+        description: "A numerical relation of the Move's effectivenss"
+
+      - name: defending_type_name
+        data_type: varchar
+        description: "The name of the Type of the Pokemon that is defending."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('incoming_types')
+                field: name

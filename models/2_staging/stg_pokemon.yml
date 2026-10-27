@@ -27,14 +27,6 @@ models:
         data_type: integer
         description: "The height of this Pokémon in decimetres."
 
-      - name: species_name
-        data_type: varchar
-        description: "The name of the species this Pokemon is. Attributes of a Pokémon species are shared across all varieties of Pokémon within the species. A good example is Wormadam; Wormadam is the species which can be found in three different varieties, Wormadam-Trash, Wormadam-Sandy and Wormadam-Plant."
-
-      - name: species_url
-        data_type: varchar
-        description: "The URL for the API response for this species."
-
       - name: weight
         data_type: integer
         description: "The weight of this pokemon in hectograms."
@@ -181,7 +173,7 @@ models:
 
       - name: slot
         data_type: integer
-        description: "The slot thes ability occupies in this Pokémon species."
+        description: "The slot the ability occupies in this Pokémon species."
 
   - name: stg_pokemon_species
     description: "A staging model for the Pokemon species. This describes the Pokemon species more in depth."
@@ -262,3 +254,72 @@ models:
       - name: species_name
         data_type: varchar
         description: "The name of the Pokemon."
+
+  - name: stg_moves
+    description: >
+      A model that is designed to hold all of the moves of Pokemon that exist.
+      Moves are the skills of Pokémon in battle. In battle, a Pokémon uses one move each turn.
+
+      This model includes details about a singular move.
+    
+    columns:
+      - name: move_id
+        data_type: integer
+        description: "The unique identifier for the Move."
+        data_tests:
+          - unique
+          - not_null
+
+      - name: move_name
+        data_type: varchar
+        description: "The name of the Move."
+
+      - name: move_type
+        data_type: varchar
+        description: "The elemental type of this move."
+
+      - name: move_accuracy
+        data_type: integer
+        description: "The percent value of how likely this move is to be successful."
+
+      - name: move_power_points
+        data_type: integer
+        description: "Power points. The number of times this move can be used."
+
+      - name: move_power
+        data_type: integer
+        description: "The base power of this move with a value of 0 if it does not have a base power."
+
+      - name: damage_class_name
+        data_type: varchar
+        description: "The type of damage the move inflicts on the target, e.g. physical."
+
+      - name: move_type_id
+        data_type: integer
+        description: "The identifier for the elemental type of this move."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('incoming_types')
+                field: id
+
+  - name: stg_types
+    description: >
+      A model that is designed to information regarding a Pokemon's type.
+      Types are properties for Pokémon and their moves. 
+    
+    columns:
+      - name: type_id
+        data_type: integer
+        description: "The unique identifier for the Type."
+        data_tests:
+          - unique
+          - not_null
+
+      - name: type_name
+        data_type: varchar
+        description: "The name of the Type."
+
+      - name: type_url
+        data_type: varchar
+        description: "The API URL for the Type."

@@ -32,9 +32,48 @@ models:
         data_type: integer
         description: "The minimum level to learn the move."
 
-      - name: level_learned_at
+      - name: version_group
         data_type: integer
         description: "The version group in which the move is learned."
+
+  - name: dim_pokemon_abilities
+    description: "A dimensional model of all of the abilities a Pokemon can possibly have."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - pokemon_id
+              - ability_id
+
+    columns:
+      - name: pokemon_id
+        data_type: integer
+        description: "{{ doc('pokemon_id') }}. This references the Pokemon that has the designated ability."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('incoming_pokemon')
+                field: id
+
+      - name: ability_id
+        data_type: integer
+        description: "Unique identifier for an Ability."
+
+      - name: ability_name
+        data_type: varchar
+        description: "The name of the ability the Pokémon may have."
+
+      - name: ability_url
+        data_type: varchar
+        description: "The URL for the API response for the Pokemon's ability."
+
+      - name: is_hidden
+        data_type: boolean
+        description: "Whether or not this is a hidden ability."
+
+      - name: slot
+        data_type: integer
+        description: "The slot the ability occupies in this Pokémon species."
 
   - name: dim_pokemon_moves
     description: "A dimensional model describeing the moves within Pokemon."
@@ -222,3 +261,91 @@ models:
       - name: weight
         data_type: integer
         description: "The weight of this pokemon in hectograms."
+
+  - name: dim_moves
+    description: >
+      A model that is designed to hold all of the moves of Pokemon that exist.
+      Moves are the skills of Pokémon in battle. In battle, a Pokémon uses one move each turn.
+
+      This model includes details about a singular move.
+    
+    columns:
+      - name: move_id
+        data_type: integer
+        description: "The unique identifier for the Move."
+        data_tests:
+          - unique
+          - not_null
+
+      - name: move_name
+        data_type: varchar
+        description: "The name of the Move."
+
+      - name: move_type
+        data_type: varchar
+        description: "The elemental type of this move."
+
+      - name: move_accuracy
+        data_type: integer
+        description: "The percent value of how likely this move is to be successful."
+
+      - name: move_power_points
+        data_type: integer
+        description: "Power points. The number of times this move can be used."
+
+      - name: move_power
+        data_type: integer
+        description: "The base power of this move with a value of 0 if it does not have a base power."
+
+      - name: damage_class_name
+        data_type: varchar
+        description: "The type of damage the move inflicts on the target, e.g. physical."
+
+      - name: move_type_id
+        data_type: integer
+        description: "The identifier for the elemental type of this move."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('incoming_types')
+                field: id
+
+  - name: dim_type_effectiveness
+    description: "A model that describes the effectivenss of a given move Type against a given Pokemon type."
+    columns:
+      - name: pk_type_effectiveness
+        data_type: varchar
+        description: "A surrogate key comprised of the attacking type ID and the defending type ID."
+        data_tests:
+          - unique
+          - not_null
+
+      - name: attacking_type_id
+        data_type: integer
+        description: "The unique identifier for the Type of Move that is being used to attack."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('incoming_types')
+                field: id
+
+      - name: attacking_type_name
+        data_type: varchar
+        description: "The name of the Type of Move that is being used to attach."
+
+      - name: multiplier
+        data_type: double
+        description: "A numerical relation of the Move's effectivenss"
+
+      - name: defending_type_name
+        data_type: varchar
+        description: "The name of the Type of Pokemon that is defending."
+
+      - name: defending_type_id
+        data_type: integer
+        description: "The unique identifier for the Type of Pokemon that is defending."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('incoming_types')
+                field: id
