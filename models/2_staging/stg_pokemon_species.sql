@@ -39,7 +39,10 @@ pokemon_species as (
         cast(species_json.is_baby as boolean) as is_baby,
         cast(species_json.is_mythical as boolean) as is_mythical,
         cast(species_json.is_legendary as boolean) as is_legendary,
-        cast(species_json.name as varchar) as species_name
+        json_extract_string(
+            species_json,
+            '$.name'
+        ) as species_name
     from src
 )
 
