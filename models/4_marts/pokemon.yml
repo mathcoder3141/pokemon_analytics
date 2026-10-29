@@ -270,32 +270,36 @@ models:
         description: "The base experience gained for defeating this Pokémon."
         data_tests:
           - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0
-              strictly: false
+              arguments:
+                min_value: 0
+                strictly: false
 
       - name: species_id
         data_type: integer
         description: "The identifier for the Pokemon species. Since there are multiple forms of a Pokemon species, this is not unique."
-        relationships:
-          - arguments:
-            to: ref('incoming_pokemon_species')
-            field: species_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('incoming_pokemon_species')
+                field: species_id
 
       - name: height
         data_type: integer
         description: "The height of this Pokémon in decimetres."
         data_tests:
           - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0
-              strictly: false
+              arguments:
+                min_value: 0
+                strictly: false
 
       - name: weight
         data_type: integer
         description: "The weight of this pokemon in hectograms."
         data_tests:
           - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0
-              strictly: false
+              arguments:
+                min_value: 0
+                strictly: false
 
   - name: dim_moves
     description: >
