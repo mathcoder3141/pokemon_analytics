@@ -18,4 +18,5 @@ final as (
     from pokemon_abilities
 )
 
-select * from pokemon_abilities
+select * from final
+

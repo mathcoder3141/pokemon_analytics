@@ -1,0 +1,35 @@
+question: Which Pokémon type has the highest average stats?
+    - model: dim_pokemon_stats x dim_pokemon_types
+
+question: How have Pokémon changed across generations?
+    - model: dim_pokemon_stats x dim_pokemon_species
+
+question: Distribution of Pokémon by generation and type
+    - model: dim_pokemon_species x dim_pokemon x dim_pokemon_types
+
+question: What is the slowest type?
+    - model: dim_pokemon_types x dim_pokemon_stats
+
+question: For each stat, what is the type with the largest base stat? How do the types rank?
+    - model: dim_pokemon_types x dim_pokemon_stats
+
+question: How many forms exist per Pokemon species?
+    - model: dim_pokemon
+
+question: Which species has the most forms?
+    - model: dim_pokemon x dim_pokemon_species
+
+question: How many Legendary and Mythical Pokémon species were introduced in each generation?
+    - model: dim_pokemon_species
+
+question: Which Ability is the most common?
+    - model: dim_pokemon_abilities
+
+question: Which Ability is most common among each type?
+    - model: dim_pokemon_abilities x dim_pokemon_types
+
+question: What type combinations are the rarest?
+    - model: dim_pokemon_types
+
+question: Do Legendary and Mythical species have different base-stat totals?
+    - model: dim_pokemon_stats x dim_pokemon_species
