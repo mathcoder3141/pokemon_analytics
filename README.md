@@ -17,23 +17,26 @@ Rather than simply consuming an API, this project will demonstrate how data is i
 
 ## Architecture
 
-Architecture
-
 PokéAPI
-   |
-   v
+
+&darr;
+
 Python ingestion
-   |
-   v
+
+&darr;
+
 DuckDB — incoming data
-   |
-   v
+
+&darr;
+
 dbt staging models
-   |
-   v
+
+&darr;
+
 dbt intermediate models
-   |
-   v
+
+&darr;
+
 dbt marts
 
 ## Data Model
