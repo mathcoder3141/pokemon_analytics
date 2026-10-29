@@ -156,7 +156,7 @@ select
 from base_forms as b
 inner join pokemon_by_type as t
     on b.pokemon_id = t.pokemon_id
-inner join marts.dim_pokemon_stats
+inner join marts.dim_pokemon_stats as s
     on b.pokemon_id = s.pokemon_id
 group by t.type_name
 order by avg_base_stat_total desc
@@ -190,7 +190,7 @@ select
 from base_forms as b
 inner join marts.dim_pokemon_species as sp
     on b.species_id = sp.species_id
-inner join marts.dim_pokemon_stats s
+inner join marts.dim_pokemon_stats as s
     on b.pokemon_id = s.pokemon_id
 group by sp.generation_name
 order by min(b.species_id);
