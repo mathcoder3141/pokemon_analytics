@@ -72,6 +72,7 @@ python3 src/ingest_pokemon.py
 
 # 2. Transform: build the staging, intermediate and marts models and run the data tests
 cd pokemon_analytics
+dbt deps
 dbt build
 
 # 3. Explore: query the marts
@@ -187,9 +188,9 @@ select
     round(avg(s.attack), 1) as avg_attack,
     round(avg(s.speed), 1) as avg_speed
 from base_forms as b
-inner join marts.dim_pokemon_species as sp using (species_id)
+inner join marts.dim_pokemon_species as sp
     on b.species_id = sp.species_id
-inner join marts.dim_pokemon_stats s using (pokemon_id)
+inner join marts.dim_pokemon_stats s
     on b.pokemon_id = s.pokemon_id
 group by sp.generation_name
 order by min(b.species_id);
