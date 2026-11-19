@@ -6,7 +6,7 @@ from airflow.providers.http.sensors.http import HttpSensor
 from airflow.providers.standard.operators.bash import BashOperator
 
 PROJECT_DIR = os.environ.get("POKEMON_PROJECT_DIR", "/opt/airflow/pokemon_analytics")
-DBT_PROJECT_DIR = os.environ.get("DBT_PROJECT_DIR", f"{PROJECT_DIR}/pokemon_analytics")
+DBT_PROJECT_DIR = os.environ.get("DBT_PROJECT_DIR", PROJECT_DIR)
 DBT_BIN = os.environ.get("DBT_BIN", "/opt/airflow/dbt_venv/bin/dbt")
 
 # dbt runs from its own project directory and reads profiles.yml from there.
@@ -20,37 +20,40 @@ default_args = {
 
 @dag(
     dag_id = "pokemon_etl",
-    description = "ETL work flow demonstrating fluency with Airflow.",
+    description = "Weekly ELT workflow: extracts from PokeAPI, loads raw JSON into DuckDB, and transforms with dbt.",
     schedule = "@weekly",
     start_date = datetime(2026, 11, 18),
     max_active_runs = 1, # Set because of DuckDB's file lock.
     catchup = False,
     default_args = default_args,
-    tags=["airflow3", "pokemon", "etl"]
+    tags=["airflow3", "pokemon", "elt"]
 )
 
 def pokemon_pipeline_v1():
     """
-    This performs multiple steps at one.
-
-    First it:
-        1a) Checks the API first.
-        1) Get's all of the Pokemon from the PokeAPI's Pokemon endpoint 
-        2) Gets all of the pokemon types from the PokeAPI's Types endpoint
-        3) Gets all of the Pokemon's moves from the PokeAPI's Moves endpoint
-        4) Creates the raw tables for the Pokemon, their types, and their moves
-        5) Loads the raw data into their respective tables
+    Weekly ELT pipeline: PokeAPI to DuckDB to dbt.
+    
+    1) Checks the API first to see if it's up.
+    2a) Gets all of the Pokemon from the PokeAPI's Pokemon endpoint.
+    2b) Gets all of the pokemon types from the PokeAPI's Types endpoint.
+    2c) Gets all of the Pokemon's moves from the PokeAPI's Moves endpoint.
+    2d) Creates the raw tables for the Pokemon, their types, and their moves.
+    2e) Loads the raw data into their respective tables.
+    3) Cleans the dbt workspace.
+    4) Installs dbt packages.
+    5) Transforms the models.
+    6) Generates the dbt project docs.
     """
 
     check_api = HttpSensor(
         task_id="check_api",
-        http_conn_id="pokeapi",           # defined via AIRFLOW_CONN_POKEAPI, see notes below
+        http_conn_id="pokeapi",
         endpoint="api/v2/pokemon?limit=1",
         poke_interval=60,
-        timeout=60 * 10,
-        mode="reschedule",                # frees the worker slot between checks
+        timeout=60 * 30,
+        mode="reschedule",
         retries=2,
-        retry_delay=timedelta(minutes=5),
+        retry_delay=timedelta(minutes=2),
     )
 
     ingest = BashOperator(

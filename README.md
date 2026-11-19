@@ -45,6 +45,7 @@ dbt marts
 
 * Python 3.9
 * Git
+* Docker
 * Optional: the [DuckDB CLI](https://duckdb.org/docs/installation/) for exploring the database
 
 ### Setup
@@ -64,18 +65,18 @@ dbt profile (`profiles.yml`) points its `path` at that file.
 
 ### Run the workflow
 
-Until the Airflow DAG is built (Phase 6), the pipeline runs as three manual steps:
+#### Run with Airflow (Docker)
+```
+docker compose up airflow-init
+docker compose up -d
+# UI at localhost:8080, trigger the pokemon_etl DAG
+```
 
-```bash
-# 1. Ingest: retrieve the Pokémon index and details from PokeAPI and load the raw payloads into DuckDB
+#### Run manually
+```
 python3 src/ingest_pokemon.py
-
-# 2. Transform: build the staging, intermediate and marts models and run the data tests
-cd pokemon_analytics
+dbt deps
 dbt build
-
-# 3. Explore: query the marts
-duckdb pokemon.duckdb
 ```
 
 `dbt build` runs each model followed by its tests, in dependency order. To run only the
@@ -187,9 +188,9 @@ select
     round(avg(s.attack), 1) as avg_attack,
     round(avg(s.speed), 1) as avg_speed
 from base_forms as b
-inner join marts.dim_pokemon_species as sp using (species_id)
+inner join marts.dim_pokemon_species as sp
     on b.species_id = sp.species_id
-inner join marts.dim_pokemon_stats s using (pokemon_id)
+inner join marts.dim_pokemon_stats as s
     on b.pokemon_id = s.pokemon_id
 group by sp.generation_name
 order by min(b.species_id);
@@ -261,6 +262,7 @@ treated as unordered, so Fire/Flying and Flying/Fire are the same.
 | API                  | PokeAPI                           |
 | Data Warehouse       | DuckDB                            |
 | Transformation       | dbt Core                          |
+| Containerization     | Docker, Docker Compose            |
 | Orchestration        | Apache Airflow                    |
 | Version Control      | Git & GitHub                      |
 | Dashboarding         | TBD (Metabase or Apache Superset) |
@@ -366,7 +368,7 @@ Build dimensional models including:
 
 ---
 
-## ✅ (6.1 is done) Phase 6 – Airflow Orchestration
+## ⏳ Phase 6 – Airflow Orchestration (v1 is done)
 
 Create an Airflow DAG to automate:
 
@@ -377,13 +379,13 @@ Create an Airflow DAG to automate:
 5. Run data quality tests
 6. Refresh analytics outputs
 
-Future versions of this DAG will feature a seperate task for steps 1 - 3. As of writing the DAG is:
-    1. Using a Sensor to check if the PokeAPI is online
-    2. Steps 1 - 3
-    3. Cleaning the dbt workspace (TODO: Figure out why this is happening)
+Future versions of this DAG will feature a separate task for steps 1 - 3. As of writing the DAG is:
+    1. Using a Sensor to check if the PokeAPI is online.
+    2. Steps 1 - 3.
+    3. Cleaning the dbt workspace.
     4. Installing dbt packages.
-    5. Materalizing dbt models and running the test suite.
-    6. Updating the docs 
+    5. Materializing dbt models and running the test suite.
+    6. Updating the docs.
 
 ---
 
