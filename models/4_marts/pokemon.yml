@@ -38,6 +38,8 @@ models:
               arguments:
                 to: ref('dim_moves')
                 field: move_id
+              config:
+                where: "move_id != 920" # Recently implemented but I guess it's not indexed yet
 
       - name: learn_method
         data_type: varchar

@@ -1,0 +1,7 @@
+pokemon_analytics:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('POKEMON_DB_PATH', 'pokemon.duckdb') }}"
+      threads: 1

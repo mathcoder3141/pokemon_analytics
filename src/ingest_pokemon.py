@@ -2,6 +2,9 @@ import duckdb
 import requests
 import json
 from datetime import datetime, timezone
+import os
+
+DB_PATH = os.environ.get("POKEMON_DB_PATH", "pokemon.duckdb")
 
 def get_pokemon_index():
     """
@@ -13,7 +16,7 @@ def get_pokemon_index():
     url = "https://pokeapi.co/api/v2/pokemon/"
     all_pokemon = []
     while url:
-        response = requests.get(url)
+        response = requests.get(url, timeout = 30)
         response.raise_for_status()
         data = response.json()
         all_pokemon.extend(data["results"])
@@ -26,7 +29,7 @@ def get_pokemon_types_index():
     url = "https://pokeapi.co/api/v2/type/"
     all_types = []
     while url:
-        response = requests.get(url)
+        response = requests.get(url, timeout = 30)
         response.raise_for_status()
         data = response.json()
         all_types.extend(data["results"])
@@ -39,7 +42,7 @@ def get_pokemon_moves_index():
     url = "https://pokeapi.co/api/v2/move/"
     all_moves = []
     while url:
-        response = requests.get(url)
+        response = requests.get(url, timeout = 30)
         response.raise_for_status()
         data = response.json()
         all_moves.extend(data["results"])
@@ -212,6 +215,9 @@ def load_raw_pokemon(conn, pokemon_index):
         print(f"Loading {index}/{total}: {pokemon['name']}")
 
         detail_response = session.get(pokemon["url"], timeout = 30)
+        if detail_response.status_code == 404:
+            print(f"WARNING: 404 for {pokemon['url']}, skipping")
+            continue
         detail_response.raise_for_status()
         pokemon_details = detail_response.json()
 
@@ -219,6 +225,9 @@ def load_raw_pokemon(conn, pokemon_index):
         pokemon_name = pokemon_details['name']
         species_url = pokemon_details['species']['url']
         species_response = session.get(species_url, timeout = 30)
+        if detail_response.status_code == 404:
+            print(f"WARNING: 404 for {species_url}, skipping")
+            continue
         species_response.raise_for_status()
         species_details = species_response.json()
         species_id = species_url.rstrip("/").split("/")[-1]
@@ -330,6 +339,9 @@ def load_raw_type(conn, type_index):
         print(f"Loading {index}/{total}: {typ['name']}")
 
         detail_response = session.get(typ["url"], timeout = 30)
+        if detail_response.status_code == 404:
+            print(f"WARNING: 404 for {typ['url']}, skipping")
+            continue
         detail_response.raise_for_status()
         type_details = detail_response.json()
 
@@ -360,6 +372,9 @@ def load_raw_move(conn, move_index):
         print(f"Loading {index}/{total}: {move['name']}")
 
         detail_response = session.get(move["url"], timeout = 30)
+        if detail_response.status_code == 404:
+            print(f"WARNING: 404 for {move['url']}, skipping")
+            continue
         detail_response.raise_for_status()
         move_details = detail_response.json()
 
@@ -381,7 +396,7 @@ def load_raw_move(conn, move_index):
         )
 
 def main():
-    with duckdb.connect('pokemon.duckdb') as poke_db:
+    with duckdb.connect(DB_PATH) as poke_db:
         pokemon_index = get_pokemon_index()
         type_index = get_pokemon_types_index()
         move_index = get_pokemon_moves_index()

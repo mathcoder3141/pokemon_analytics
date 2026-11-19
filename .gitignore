@@ -5,3 +5,7 @@ package-lock.yml
 target/
 logs/
 dbt_packages/
+.env
+.user.yml
+dags/__pycache__
+.DS_Store

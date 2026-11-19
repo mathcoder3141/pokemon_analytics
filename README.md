@@ -366,7 +366,7 @@ Build dimensional models including:
 
 ---
 
-## ⏳ Phase 6 – Airflow Orchestration
+## ✅ (6.1 is done) Phase 6 – Airflow Orchestration
 
 Create an Airflow DAG to automate:
 
@@ -376,6 +376,14 @@ Create an Airflow DAG to automate:
 4. Execute dbt models
 5. Run data quality tests
 6. Refresh analytics outputs
+
+Future versions of this DAG will feature a seperate task for steps 1 - 3. As of writing the DAG is:
+    1. Using a Sensor to check if the PokeAPI is online
+    2. Steps 1 - 3
+    3. Cleaning the dbt workspace (TODO: Figure out why this is happening)
+    4. Installing dbt packages.
+    5. Materalizing dbt models and running the test suite.
+    6. Updating the docs 
 
 ---
 
